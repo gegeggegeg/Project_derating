@@ -3,7 +3,8 @@ import component
 
 class ReadBom():
 	"""read data from bom."""
-	def __init__(self,filename):
+	def __init__(self, filename):
+		self.sorted_data = {}
 		self.filename = filename	
 	def read_bom(self):
 		with open(self.filename) as f:
@@ -12,9 +13,7 @@ class ReadBom():
 			return header_row
 	def sort_component(self):
 		""" find resistors from BOM."""
-		keypool = ['TF-RES', 'TF-CAP','TF-INDUCTOR','TF-FERRITE','TF-DIODE','TF-LED','TF-TRANS'
-					,'TF-CON','TF-IC']
-		sorted_data = {}
+		keypool = ['TF-RES', 'TF-CAP','TF-INDUCTOR','TF-FERRITE','TF-DIODE','TF-LED','TF-TRAN		S','TF-CON','TF-IC']
 		resistors = []
 		capacitors = [] 
 		inductors = []
@@ -33,94 +32,48 @@ class ReadBom():
 					if  keyword in row[6]:
 						if(keyword == 'TF-RES'):
 							comp = component.Resistor()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							resistors.append(comp)
-							sorted_data[keyword] = resistors
+							self.store_data(row, comp, resistors, keyword)
 						elif(keyword == 'TF-CAP'):
 							comp = component.Capacitor()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							capacitors.append(comp)
-							sorted_data[keyword] = capacitors
+							self.store_data(row, comp, capacitors, keyword)
 						elif(keyword == 'TF-INDUCTOR'):
 							comp = component.Inductor()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							inductors.append(comp)
-							sorted_data[keyword] = inductors
+							self.store_data(row, comp, inductors, keyword)
 						elif(keyword == 'TF-FERRITE'):
 							comp = component.Ferrite()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							ferrites.append(comp)
-							sorted_data[keyword] = ferrites
+							self.store_data(row, comp, ferrites, keyword)
 						elif(keyword == 'TF-DIODE'):
 							comp = component.Diode()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							diodes.append(comp)
-							sorted_data[keyword] = diodes
+							self.store_data(row, comp, diodes, keyword)
 						elif(keyword == 'TF-LED'):
 							comp = component.LED()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							leds.append(comp)
-							sorted_data[keyword] = leds
+							self.store_data(row, comp, leds, keyword)
 						elif(keyword == 'TF-TRANS'):
 							if 'MOS' in row[6]:
 								comp = component.MOSFET()
-								comp.ref = row[3]
-								comp.value = row[2]
-								comp.pn = row[5]
-								comp.des = row[6]
-								mos.append(comp)
-								sorted_data['MOS'] = mos
+								self.store_data(row, comp, mos, keyword)
 							elif 'NPN' or 'PNP' in row[6]:
 								comp = component.BJT()
-								comp.ref = row[3]
-								comp.value = row[2]
-								comp.pn = row[5]
-								comp.des = row[6]
-								bjt.append(comp)
-								sorted_data['BJT'] = bjt
+								self.store_data(row, comp, bjt, keyword)
 						elif(keyword == 'TF-CON'):
 							comp = component.Connector()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							cons.append(comp)
-							sorted_data[keyword] = cons
+							self.store_data(row, comp, cons, keyword)
 						elif(keyword == 'TF-IC'):
 							comp = component.IC()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							ic.append(comp)
-							sorted_data[keyword] = ic
+							self.store_data(row, comp, ic, keyword)
 						else:
 							comp = component.Other()
-							comp.ref = row[3]
-							comp.value = row[2]
-							comp.pn = row[5]
-							comp.des = row[6]
-							others.append(comp)
-							sorted_data['Other'] = others
-		return sorted_data		
+							self.store_data(row, comp, others, keyword)
+		return self.sorted_data		
+	
+	def store_data(self, row, component, temp_storage, keyword):
+		component.ref = row[3]
+		component.value = row[2]
+		component.pn = row[5]
+		component.des = row[6]
+		temp_storage.append(component)
+		self.sorted_data[keyword] = temp_storage
+		
 		
 	def	output_sorted_resistors(self, resistors):
 		with open(resistor.csv, "w+") as myfile:
